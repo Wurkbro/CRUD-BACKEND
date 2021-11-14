@@ -15,7 +15,7 @@ const studentData = new moogoose.Schema({
         required: true,
         unique:true
     },
-    number:{
+    numberno:{
         type: String,
         required: true,
         unique:true

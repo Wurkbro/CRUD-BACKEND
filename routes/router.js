@@ -7,13 +7,32 @@ const User = require('../models/user');
 const StudentData = require('../models/studentdata');
 dotenv.config();
 
+router.post('/updateData',async(req,res)=>{
+    const { token , newnumber , rollno} = req.body;// to get access token from request body
+    const numberno = newnumber;
+    try{
+        const user = jwt.verify(token ,process.env.JWT_SECRET);
+        //if verified successfully
+        // now we can update student number 
+        await StudentData.updateOne({ rollno },{
+            $set: { numberno }
+        })
+        return res.json({status : 'ok', data: 'successfully updated number'});
+    }
+    catch(error){
+        // console.log(error);
+        //can't fetch data user has not completed the login process... 
+        return res.json({status : 'error',error:'login first'});
+    }    
+});
+
 router.post('/deleteData',async(req,res)=>{
     const { token , rollno} = req.body;// to get access token from request body
     try{
         const user = jwt.verify(token ,process.env.JWT_SECRET);
         //if verified successfully
         const users = await StudentData.findOneAndDelete({rollno}).lean();//to search user in record
-        console.log(users);
+        // console.log(users);
         await User.deleteOne(users);
         return res.json({status : 'ok', data: 'successfully deleted'});
     }
@@ -39,7 +58,7 @@ router.post('/fetchData',async(req,res)=>{
 
 router.post('/putData',async(req,res)=>{
 
-    const { token , names , regno , rollno, number, aadharno} = req.body;
+    const { token , names , regno , rollno, numberno, aadharno} = req.body;
     try{
         const user = jwt.verify(token ,process.env.JWT_SECRET);
         //if verified successfully
@@ -47,7 +66,7 @@ router.post('/putData',async(req,res)=>{
             names,
             regno,
             rollno,
-            number,
+            numberno,
             aadharno
         });
         return res.json({status : 'ok'});
@@ -88,7 +107,7 @@ router.post('/changePass',async (req,res)=>{
         
         await User.updateOne({ _id },{
             $set: { password }
-        })
+        });
         res.json({status:"ok"});
     }
     catch(error){
@@ -111,6 +130,10 @@ router.post('/login',async(req,res)=>{
             username: user.username
         }, process.env.JWT_SECRET);
         return res.json({status: 'ok' , data: token});
+    }
+    else
+    {
+        return res.json({status: 'error' , error:'Invalid password'});
     }
 });
 
